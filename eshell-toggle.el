@@ -146,7 +146,7 @@
   (let ((project
 	 (cond ((eq eshell-toggle-check-project-method 'project)
 		(project-name (project-current)))
-	       ((eq eshell-toggle-check-project-method 'project)
+	       ((eq eshell-toggle-check-project-method 'projectile)
 		(projectile-project-name))
 	       (t ""))))
     (if (not eshell-toggle-check-project-method)
