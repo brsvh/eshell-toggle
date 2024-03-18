@@ -71,8 +71,16 @@
   nil
   "Open eshell at projectile's project root if not nil."
   :type '(choice (const :tag "Built-in `project'" 'project)
-                 (const :tag "`projectile'" 'projectile)
-		 (const :tag "Disabled" nil))
+                 (const :tag "Use `projectile'" 'projectile)
+		 (const :tag "Use Git'" 'git)
+                 (const :tag "Disabled" nil))
+  :group 'eshell-toggle)
+
+(defcustom eshell-toggle-use-projectile-root
+  nil
+  "Open eshell at projectile's project root if not nil."
+  :type '(choice (const :tag "Disabled" nil)
+                 (const :tag "Enabled" t))
   :group 'eshell-toggle)
 
 (make-obsolete-variable 'eshell-toggle-use-projectile-root "Use `eshell-toggle-check-project-method' instead" "0.10.1")
@@ -109,6 +117,8 @@
                  (const :tag "Enabled" t))
   :group 'eshell-toggle)
 
+(make-obsolete-variable 'eshell-toggle-use-git-root "Use `eshell-toggle-check-project-method' instead" "0.10.1")
+
 (defvar eshell-toggle--toggle-buffer-p nil)
 (make-variable-buffer-local 'eshell-toggle--toggle-buffer-p)
 
@@ -134,7 +144,7 @@
        (condition-case nil
            (projectile-project-root)
          (error nil)))
-   (if eshell-toggle-use-git-root
+   (if (eq eshell-toggle-check-project-method 'git)
        (condition-case nil
            (eshell-toggle-get-git-directory default-directory)
          (error nil)))
@@ -143,17 +153,17 @@
 
 (defun eshell-toggle--make-buffer-name ()
   "Generate toggle buffer name."
-  (let ((project
-	 (cond ((eq eshell-toggle-check-project-method 'project)
-		(project-name (project-current)))
-	       ((eq eshell-toggle-check-project-method 'projectile)
-		(projectile-project-name))
-	       (t ""))))
-    (if (not eshell-toggle-check-project-method)
-	(let* ((dir (eshell-toggle--get-directory))
-               (name (string-join (split-string dir "/") eshell-toggle-name-separator))
-               (buf-name (concat "*et" name "*")))
-	  buf-name)
+  (if (not eshell-toggle-check-project-method)
+      (let* ((dir (eshell-toggle--get-directory))
+             (name (string-join (split-string dir "/") eshell-toggle-name-separator))
+             (buf-name (concat "*et" name "*")))
+        buf-name)
+    (let ((project
+           (cond ((eq eshell-toggle-check-project-method 'project)
+                  (project-name (project-current)))
+                 ((eq eshell-toggle-check-project-method 'projectile)
+                  (projectile-project-name))
+                 (t ""))))
       (concat "*et" eshell-toggle-name-separator project "*"))))
 
 (defun eshell-toggle-init-eshell (dir)
